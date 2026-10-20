@@ -46,7 +46,7 @@ func _ready() -> void:
 		_button("이어하기", func() -> void:
 			var data := SaveManager.load_game(0)
 			var next: String = data.get("chapter", "CH01")
-			GameState.start_chapter(next if GameState.CHAPTERS.has(next) else "CH01"))
+			GameState.start_chapter(next if GameState.chapter_playable(next) else "CH01"))
 	_button("전투 프로토타입 (아레나)", func() -> void: GameState.start_chapter("ARENA"))
 	_button("종료", func() -> void: get_tree().quit())
 
@@ -61,10 +61,10 @@ func _ready() -> void:
 	ver.text = "v%s · Godot 4.3 prototype" % ProjectSettings.get_setting("application/config/version", "0.0")
 	ver.add_theme_color_override("font_color", Color(0.35, 0.36, 0.38))
 	ver.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	ver.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	ver.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	ver.position = Vector2(-160, -20)
-	ver.size = Vector2(150, 14)
+	ver.offset_left = -260
+	ver.offset_right = -12
+	ver.offset_top = -24
+	ver.offset_bottom = -8
 	ver.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	add_child(ver)
 	if _box.get_child_count() > 0:

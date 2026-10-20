@@ -9,6 +9,17 @@
 
 설계 문서는 [`docs/GDD.md`](docs/GDD.md), 1장 연출 흐름은 [`docs/CH01_GARAGE.md`](docs/CH01_GARAGE.md) 에 있다.
 
+| | |
+| --- | --- |
+| ![정비소, 방문객](docs/screenshots/02_garage_visitor.png) | ![정전 뒤 첫 교전](docs/screenshots/03_blackout.png) |
+| ![총격전](docs/screenshots/04_firefight.png) | ![아레나](docs/screenshots/05_arena.png) |
+
+스크린샷은 `tools/Screenshots.tscn` 이 가상 화면(Xvfb + Mesa)에서 자동으로 찍은 것이다:
+
+```bash
+xvfb-run -s "-screen 0 1280x720x24" godot --path . tools/Screenshots.tscn --rendering-driver opengl3 -- --out=/tmp/shots
+```
+
 ## 지금 플레이할 수 있는 것
 
 | 메뉴 | 내용 | 제작 단계 |
@@ -106,10 +117,12 @@ assets/
 └── fonts/                       Galmuri11 · Galmuri9 (SIL OFL 1.1)
 tools/
 ├── gen_placeholders.py          스프라이트 생성기
-└── SmokeTest.tscn/.gd           헤드리스 통합 테스트
+├── SmokeTest.tscn/.gd           헤드리스 통합 테스트
+└── Screenshots.tscn/.gd         주요 장면 자동 캡처 (SmokeTest 확장)
 docs/
 ├── GDD.md                       스토리 & 세계관 설계 문서 v1.0
-└── CH01_GARAGE.md               1장 이벤트 흐름 · 튜토리얼 설계
+├── CH01_GARAGE.md               1장 이벤트 흐름 · 튜토리얼 설계
+└── screenshots/                 자동 캡처 화면
 ```
 
 ### 새 챕터를 추가하려면

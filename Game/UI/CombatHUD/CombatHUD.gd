@@ -11,14 +11,14 @@ const COLOR_TEAL := Color(0.32, 0.63, 0.66)
 var objective_label: Label
 var hint_label: Label
 var threat_label: Label
-var health_bar: ProgressBar
+var health_bar: Control
 var bleed_label: Label
 var weapon_label: Label
 var ammo_label: Label
-var reload_bar: ProgressBar
+var reload_bar: Control
 var crosshair: TextureRect
 var prompt_label: Label
-var hold_bar: ProgressBar
+var hold_bar: Control
 var combat_group: Array[Control] = []
 var _hint_t := 0.0
 var _player: Player
@@ -31,40 +31,31 @@ func _ready() -> void:
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(root)
 
-	objective_label = _label(root, Vector2(12, 10), COLOR_TEXT, 11)
-	hint_label = _label(root, Vector2(12, 26), COLOR_ORANGE, 11)
-	threat_label = _label(root, Vector2(0, 10), COLOR_RED, 11)
-	threat_label.anchor_left = 1.0
-	threat_label.anchor_right = 1.0
-	threat_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	threat_label.position = Vector2(-12, 10)
+	# 좌상단: 목표 · 알림
+	objective_label = _label(root, COLOR_TEXT, 11)
+	_place(objective_label, Control.PRESET_TOP_LEFT, 12, 10, 412, 26)
+	hint_label = _label(root, COLOR_ORANGE, 11)
+	_place(hint_label, Control.PRESET_TOP_LEFT, 12, 26, 512, 42)
+	# 우상단: 위협
+	threat_label = _label(root, COLOR_RED, 11)
+	_place(threat_label, Control.PRESET_TOP_RIGHT, -312, 10, -12, 26)
 	threat_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-
-	health_bar = _bar(root, Rect2(12, 338, 110, 8), COLOR_RED)
-	health_bar.anchor_top = 1.0
-	health_bar.anchor_bottom = 1.0
-	health_bar.position = Vector2(12, -22)
-	bleed_label = _label(root, Vector2(12, -36), COLOR_RED, 11)
-	bleed_label.anchor_top = 1.0
-	bleed_label.anchor_bottom = 1.0
+	# 좌하단: 체력 · 출혈
+	health_bar = _bar(root, COLOR_RED)
+	_place(health_bar, Control.PRESET_BOTTOM_LEFT, 12, -20, 122, -14)
+	bleed_label = _label(root, COLOR_RED, 11)
+	_place(bleed_label, Control.PRESET_BOTTOM_LEFT, 12, -38, 112, -22)
 	bleed_label.text = "출혈"
 	bleed_label.visible = false
-
-	weapon_label = _label(root, Vector2(0, 0), COLOR_DIM, 11)
-	weapon_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	weapon_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	weapon_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	weapon_label.position = Vector2(-12, -36)
+	# 우하단: 무기 · 탄약 · 재장전
+	weapon_label = _label(root, COLOR_DIM, 11)
+	_place(weapon_label, Control.PRESET_BOTTOM_RIGHT, -212, -38, -12, -22)
 	weapon_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	ammo_label = _label(root, Vector2(0, 0), COLOR_TEXT, 11)
-	ammo_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	ammo_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	ammo_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	ammo_label.position = Vector2(-12, -22)
+	ammo_label = _label(root, COLOR_TEXT, 11)
+	_place(ammo_label, Control.PRESET_BOTTOM_RIGHT, -212, -22, -12, -6)
 	ammo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	reload_bar = _bar(root, Rect2(0, 0, 60, 4), COLOR_ORANGE)
-	reload_bar.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	reload_bar.position = Vector2(-72, -8)
+	reload_bar = _bar(root, COLOR_ORANGE)
+	_place(reload_bar, Control.PRESET_BOTTOM_RIGHT, -72, -5, -12, -2)
 	reload_bar.visible = false
 
 	crosshair = TextureRect.new()
@@ -75,9 +66,10 @@ func _ready() -> void:
 	crosshair.modulate = Color(1, 1, 1, 0.9)
 	root.add_child(crosshair)
 
-	prompt_label = _label(root, Vector2.ZERO, COLOR_TEXT, 11)
+	prompt_label = _label(root, COLOR_TEXT, 11)
 	prompt_label.visible = false
-	hold_bar = _bar(root, Rect2(0, 0, 40, 3), COLOR_TEAL)
+	hold_bar = _bar(root, COLOR_TEAL)
+	hold_bar.size = Vector2(40, 3)
 	hold_bar.visible = false
 
 	combat_group = [health_bar, weapon_label, ammo_label]
@@ -95,9 +87,16 @@ func _exit_tree() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 
-func _label(parent: Control, pos: Vector2, color: Color, size: int) -> Label:
+func _place(c: Control, preset: Control.LayoutPreset, left: float, top: float, right: float, bottom: float) -> void:
+	c.set_anchors_preset(preset)
+	c.offset_left = left
+	c.offset_top = top
+	c.offset_right = right
+	c.offset_bottom = bottom
+
+
+func _label(parent: Control, color: Color, size: int) -> Label:
 	var l := Label.new()
-	l.position = pos
 	l.add_theme_color_override("font_color", color)
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
@@ -108,36 +107,40 @@ func _label(parent: Control, pos: Vector2, color: Color, size: int) -> Label:
 	return l
 
 
-func _bar(parent: Control, rect: Rect2, color: Color) -> ProgressBar:
-	var b := ProgressBar.new()
-	b.position = rect.position
-	b.size = rect.size
-	b.show_percentage = false
+## 얇은 막대 게이지 (ProgressBar 는 폰트 높이만큼 최소 크기를 가져 너무 두껍다).
+## 반환된 Control 의 메타 "fill" 이 채움 영역이며 set_bar() 로 비율을 바꾼다.
+func _bar(parent: Control, color: Color) -> Control:
+	var b := ColorRect.new()
+	b.color = Color(0, 0, 0, 0.55)
 	b.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bg := StyleBoxFlat.new()
-	bg.bg_color = Color(0, 0, 0, 0.55)
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = color
-	b.add_theme_stylebox_override("background", bg)
-	b.add_theme_stylebox_override("fill", fill)
+	var fill := ColorRect.new()
+	fill.color = color
+	fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fill.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fill.anchor_right = 1.0
+	b.add_child(fill)
+	b.set_meta("fill", fill)
 	parent.add_child(b)
 	return b
+
+
+func set_bar(bar: Control, ratio: float) -> void:
+	var fill: Control = bar.get_meta("fill")
+	fill.anchor_right = clampf(ratio, 0.0, 1.0)
+	fill.offset_right = 0.0
 
 
 func _bind_player(p: Node) -> void:
 	_player = p as Player
 	if _player == null:
 		return
-	_player.health.health_changed.connect(func(c: float, m: float) -> void:
-		health_bar.max_value = m
-		health_bar.value = c)
+	_player.health.health_changed.connect(func(c: float, m: float) -> void: set_bar(health_bar, c / m))
 	_player.health.bleeding_changed.connect(func(b: bool) -> void: bleed_label.visible = b)
 	_player.interact_target_changed.connect(_on_interact_target)
 	_player.hold_progress_changed.connect(func(r: float) -> void:
 		hold_bar.visible = r > 0.0
-		hold_bar.value = r * 100.0)
-	health_bar.max_value = _player.health.max_health
-	health_bar.value = _player.health.health
+		set_bar(hold_bar, r))
+	set_bar(health_bar, _player.health.ratio())
 
 
 func _on_hint(text: String, seconds: float) -> void:
@@ -172,7 +175,7 @@ func _process(delta: float) -> void:
 		ammo_label.modulate = COLOR_DIM
 	reload_bar.visible = _player.gunplay.reloading
 	if reload_bar.visible:
-		reload_bar.value = _player.gunplay.reload_progress() * 100.0
+		set_bar(reload_bar, _player.gunplay.reload_progress())
 	var alerted := 0
 	for e in get_tree().get_nodes_in_group("enemies"):
 		if e is Enemy and not e.is_dead and e.ai_state == Enemy.AIState.COMBAT:

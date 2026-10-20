@@ -21,8 +21,8 @@ func _show_menu() -> void:
 
 func _load_chapter(chapter_id: String) -> void:
 	var info: Dictionary = GameState.CHAPTERS.get(chapter_id, {})
-	if info.is_empty():
-		push_warning("Main: unknown chapter %s" % chapter_id)
+	if info.is_empty() or not GameState.chapter_playable(chapter_id):
+		push_warning("Main: chapter %s is not playable yet" % chapter_id)
 		_show_menu()
 		return
 	get_tree().paused = false

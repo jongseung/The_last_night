@@ -67,9 +67,10 @@ func _ready() -> void:
 	cue_label.text = "▼"
 	cue_label.add_theme_color_override("font_color", Color(0.6, 0.62, 0.64))
 	cue_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	cue_label.grow_horizontal = Control.GROW_DIRECTION_BEGIN
-	cue_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	cue_label.position = Vector2(-70, -26)
+	cue_label.offset_left = -84
+	cue_label.offset_right = -64
+	cue_label.offset_top = -34
+	cue_label.offset_bottom = -18
 	cue_label.visible = false
 	root.add_child(cue_label)
 

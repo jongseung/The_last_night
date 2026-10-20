@@ -115,12 +115,12 @@ d.line((0, 31, 31, 31), fill=(48, 50, 54, 255))
 d.line((31, 0, 31, 31), fill=(48, 50, 54, 255))
 save(img, "floor_concrete.png")
 
-img, d = new(32, 32)
-d.rectangle((0, 0, 31, 31), fill=(46, 48, 52, 255))
-d.rectangle((0, 0, 31, 3), fill=(30, 30, 34, 255))
-d.line((0, 20, 31, 20), fill=(28, 28, 32, 255))
-for _ in range(20):
-    d.point((random.randrange(32), random.randrange(4, 32)), fill=(70, 72, 76, 255))
+img, d = new(32, 32)   # 기름 얼룩: 반투명 얼룩 (바닥 위에 덧그림)
+for _ in range(9):
+    cx, cy = random.randrange(8, 24), random.randrange(8, 24)
+    r = random.randrange(3, 9)
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=(12, 12, 16, 110))
+d.ellipse((10, 10, 22, 22), fill=(8, 8, 12, 150))
 save(img, "floor_oilstain.png")
 
 img, d = new(32, 32)

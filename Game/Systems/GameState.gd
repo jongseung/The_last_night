@@ -13,6 +13,7 @@ signal player_registered(player: Node)
 
 const CHAPTERS := {
 	"CH01": {"title": "돌아온 망자", "scene": "res://Game/World/Interiors/Garage/Garage.tscn", "next": "CH02"},
+	"CH02": {"title": "익숙한 골목", "scene": "", "next": "CH03"},   # 제작 예정
 	"ARENA": {"title": "전투 프로토타입", "scene": "res://Game/World/Interiors/Arena/Arena.tscn", "next": ""},
 }
 
@@ -54,3 +55,8 @@ func show_hint(text: String, seconds: float = 4.0) -> void:
 
 func chapter_title(chapter_id: String) -> String:
 	return CHAPTERS.get(chapter_id, {}).get("title", chapter_id)
+
+
+## 실제로 플레이 가능한(씬이 있는) 챕터인지
+func chapter_playable(chapter_id: String) -> bool:
+	return CHAPTERS.get(chapter_id, {}).get("scene", "") != ""

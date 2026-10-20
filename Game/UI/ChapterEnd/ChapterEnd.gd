@@ -40,11 +40,12 @@ func _ready() -> void:
 	nxt.position = Vector2(80, y + 16)
 	add_child(nxt)
 	var flags := Label.new()
+	flags.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	flags.text = "스토리 플래그: " + ", ".join(StoryFlags.to_dict().keys())
 	flags.add_theme_color_override("font_color", Color(0.4, 0.42, 0.44))
 	flags.position = Vector2(80, y + 36)
+	flags.custom_minimum_size = Vector2(480, 0)
 	flags.size = Vector2(480, 30)
-	flags.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	add_child(flags)
 	var b := Button.new()
 	b.text = "메인 메뉴로"

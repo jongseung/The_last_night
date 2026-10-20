@@ -20,16 +20,20 @@ func _ready() -> void:
 	root.add_child(fade_rect)
 	title_small = Label.new()
 	title_small.set_anchors_preset(Control.PRESET_CENTER)
-	title_small.position = Vector2(-120, -34)
-	title_small.size = Vector2(240, 16)
+	title_small.offset_left = -160
+	title_small.offset_right = 160
+	title_small.offset_top = -34
+	title_small.offset_bottom = -18
 	title_small.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_small.add_theme_color_override("font_color", Color(0.6, 0.62, 0.64))
 	title_small.modulate.a = 0.0
 	root.add_child(title_small)
 	title_big = Label.new()
 	title_big.set_anchors_preset(Control.PRESET_CENTER)
-	title_big.position = Vector2(-160, -14)
-	title_big.size = Vector2(320, 30)
+	title_big.offset_left = -200
+	title_big.offset_right = 200
+	title_big.offset_top = -14
+	title_big.offset_bottom = 16
 	title_big.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title_big.add_theme_font_size_override("font_size", 22)
 	title_big.add_theme_color_override("font_color", Color(0.92, 0.92, 0.9))
@@ -37,8 +41,10 @@ func _ready() -> void:
 	root.add_child(title_big)
 	center_box = VBoxContainer.new()
 	center_box.set_anchors_preset(Control.PRESET_CENTER)
-	center_box.position = Vector2(-90, 20)
-	center_box.size = Vector2(180, 80)
+	center_box.offset_left = -90
+	center_box.offset_right = 90
+	center_box.offset_top = 24
+	center_box.offset_bottom = 100
 	center_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	center_box.visible = false
 	root.add_child(center_box)
