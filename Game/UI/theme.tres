@@ -1,0 +1,29 @@
+[gd_resource type="Theme" load_steps=3 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/Galmuri11.ttf" id="1_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(0.1, 0.11, 0.13, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.18, 0.43, 0.46, 1)
+content_margin_left = 10.0
+content_margin_top = 4.0
+content_margin_right = 10.0
+content_margin_bottom = 4.0
+
+[resource]
+default_font = ExtResource("1_font")
+default_font_size = 11
+Button/font_sizes/font_size = 11
+Button/styles/normal = SubResource("StyleBoxFlat_btn")
+Button/styles/hover = SubResource("StyleBoxFlat_btn")
+Button/styles/pressed = SubResource("StyleBoxFlat_btn")
+Button/styles/focus = SubResource("StyleBoxFlat_btn")
+Button/colors/font_color = Color(0.92, 0.92, 0.9, 1)
+Button/colors/font_hover_color = Color(1, 0.77, 0.43, 1)
+Button/colors/font_pressed_color = Color(1, 0.77, 0.43, 1)
+Button/colors/font_focus_color = Color(1, 0.77, 0.43, 1)
+Label/colors/font_color = Color(0.92, 0.92, 0.9, 1)

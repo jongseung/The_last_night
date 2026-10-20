@@ -1,0 +1,10 @@
+# Godot 4
+.godot/
+*.tmp
+export/
+export_presets.cfg
+# OS
+.DS_Store
+Thumbs.db
+# Python
+__pycache__/
