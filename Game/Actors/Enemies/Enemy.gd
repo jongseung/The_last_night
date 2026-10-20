@@ -8,13 +8,9 @@ extends Actor
 
 enum AIState { IDLE, PATROL, SUSPICIOUS, COMBAT, SEARCH }
 
-const PISTOL: WeaponData = preload("res://Game/Combat/Weapons/Pistol.tres")
-const PIPE: WeaponData = preload("res://Game/Combat/Weapons/Pipe.tres")
-const TEX_GUNMAN: Texture2D = preload("res://assets/sprites/enemy_gunman.png")
-const TEX_THUG: Texture2D = preload("res://assets/sprites/enemy_thug.png")
 
 @export var archetype: StringName = &"gunman"   ## &"gunman" | &"thug"
-@export var vision_range: float = 250.0
+@export var vision_range: float = 340.0
 @export var vision_fov_deg: float = 110.0
 @export var hearing_multiplier: float = 1.0
 @export var patrol_points: Array[Vector2] = []
@@ -58,12 +54,12 @@ func _ready() -> void:
 	NoiseBus.noise_emitted.connect(_on_noise)
 	if archetype == &"thug":
 		health.max_health = 70.0
-		walk_speed = 150.0
-		inventory.add_weapon(WeaponSlot.create(PIPE, 0, 0), true)
+		walk_speed = 190.0
+		inventory.add_weapon(WeaponSlot.create(Weapons.pipe(), 0, 0), true)
 	else:
 		health.max_health = 60.0
-		walk_speed = 110.0
-		inventory.add_weapon(WeaponSlot.create(PISTOL, 12, 12), true)
+		walk_speed = 140.0
+		inventory.add_weapon(WeaponSlot.create(Weapons.pistol(), 12, 12), true)
 	health.health = health.max_health
 	mark.visible = false
 	target = GameState.player as Actor
@@ -73,9 +69,8 @@ func _ready() -> void:
 		call_deferred("alert_to", target.global_position if target else global_position)
 
 
-func equip_slot(slot: WeaponSlot) -> void:
-	super.equip_slot(slot)
-	body.texture = TEX_THUG if archetype == &"thug" else TEX_GUNMAN
+func visual_variant() -> String:
+	return "thug" if archetype == &"thug" else "gunman"
 
 
 func is_unaware() -> bool:
@@ -110,7 +105,7 @@ func _physics_process(delta: float) -> void:
 			desired = _search(delta)
 	if is_staggered():
 		_melee_windup = 0.0
-		body.modulate = body.modulate.lerp(Color.WHITE, delta * 10.0)
+		visual.modulate = visual.modulate.lerp(Color.WHITE, delta * 10.0)
 	move_actor(delta, desired)
 
 
@@ -283,9 +278,10 @@ func _combat_thug(delta: float) -> Vector2:
 	if _melee_windup > 0.0:
 		_melee_windup -= delta
 		face(to_target)
-		body.modulate = Color(1.3, 0.9, 0.7)
+		visual.modulate = Color(1.4, 0.9, 0.7)
 		if _melee_windup <= 0.0:
-			body.modulate = Color.WHITE
+			visual.modulate = Color.WHITE
+			visual.play_action(0.25)
 			var result := melee.perform(global_position, aim_dir, weapon)
 			_melee_cooldown = 1.0
 			knockback_velocity += aim_dir * 60.0   # 휘두르며 한 발 전진
@@ -332,9 +328,9 @@ func _combat_gunman(delta: float) -> Vector2:
 	else:
 		crouching = false
 		if has_los:
-			if dist < 90.0:
+			if dist < 120.0:
 				desired = -to_target.normalized() * walk_speed * 0.8
-			elif dist > 230.0:
+			elif dist > 300.0:
 				desired = _nav_dir(target.global_position) * walk_speed
 			else:
 				_strafe_t -= delta
@@ -362,7 +358,7 @@ func _shoot_logic(delta: float, dist: float, moving: bool) -> void:
 		return
 	if not _line_of_sight(target.global_position):
 		return
-	var penalty := accuracy_penalty_deg + (4.0 if moving else 0.0) + clampf((dist - 120.0) / 40.0, 0.0, 4.0)
+	var penalty := accuracy_penalty_deg + (4.0 if moving else 0.0) + clampf((dist - 160.0) / 55.0, 0.0, 4.0)
 	if gunplay.try_fire(muzzle_position(), aim_dir, false, penalty):
 		_burst_shots += 1
 		if _burst_shots >= randi_range(2, 3):
@@ -372,7 +368,7 @@ func _shoot_logic(delta: float, dist: float, moving: bool) -> void:
 
 func _find_cover() -> CoverPoint:
 	var best: CoverPoint = null
-	var best_d := 200.0
+	var best_d := 280.0
 	for cp in get_tree().get_nodes_in_group("cover_points"):
 		var point := cp as CoverPoint
 		if point == null or not point.is_free(self):
@@ -421,6 +417,5 @@ func take_damage(info: DamageInfo) -> bool:
 func _on_died(_info: DamageInfo) -> void:
 	_release_cover()
 	mark.visible = false
-	body.modulate = Color(0.55, 0.5, 0.52)
 	if target and target.has_method("register_kill"):
 		target.register_kill(self)

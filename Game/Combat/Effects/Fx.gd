@@ -2,6 +2,7 @@ class_name Fx
 extends RefCounted
 ## 전투 연출 헬퍼. 총구 화염, 탄흔, 피격 혈흔, 유리 파편 등을 코드로 생성한다.
 ## 레벨의 "FX" / "Decals" 컨테이너가 있으면 그곳에, 없으면 지정 부모에 붙인다.
+## 좌표: '화면 위치(screen)' 는 이미 높이만큼 올린 그림 위치, '바닥 위치(ground)' 는 ViewSpace 바닥 좌표.
 
 static var _light_tex: GradientTexture2D
 
@@ -43,16 +44,18 @@ static func make_light(parent: Node, pos: Vector2, color: Color, energy: float, 
 	return light
 
 
-static func muzzle_flash(from: Node, pos: Vector2, dir: Vector2) -> void:
+## pos 는 바닥 좌표의 총구. 그림은 GUN_HEIGHT 만큼 올린다.
+static func muzzle_flash(from: Node, ground_pos: Vector2, dir: Vector2) -> void:
 	var fx := _container(from, "FX")
+	var pos := ViewSpace.lift(ground_pos)
 	var s := Sprite2D.new()
-	s.texture = preload("res://assets/sprites/muzzle_flash.png")
+	s.texture = preload("res://assets/sprites/fx/muzzle_flash.png")
 	s.global_position = pos + dir * 6.0
 	s.rotation = dir.angle()
 	s.offset = Vector2(6, 0)
 	s.z_index = 5
 	fx.add_child(s)
-	var light := make_light(fx, pos, Color(1.0, 0.8, 0.5), 1.6, 0.9)
+	var light := make_light(fx, pos, Color(1.0, 0.8, 0.5), 1.8, 1.1)
 	light.shadow_enabled = false
 	_free_after(from, [s, light], 0.05)
 
@@ -82,13 +85,14 @@ static func impact(from: Node, pos: Vector2, normal: Vector2, color: Color = Col
 static func bullet_hole(from: Node, pos: Vector2) -> void:
 	var decals := _container(from, "Decals")
 	var s := Sprite2D.new()
-	s.texture = preload("res://assets/sprites/bullet_hole.png")
+	s.texture = preload("res://assets/sprites/fx/bullet_hole.png")
 	s.global_position = pos
 	s.rotation = randf() * TAU
 	decals.add_child(s)
 
 
-static func blood(from: Node, pos: Vector2, dir: Vector2, big: bool = false) -> void:
+## pos: 튀는 피가 시작되는 화면 위치(몸통 높이), ground: 혈흔이 남는 바닥 위치
+static func blood(from: Node, pos: Vector2, ground: Vector2, dir: Vector2, big: bool = false) -> void:
 	var fx := _container(from, "FX")
 	var p := CPUParticles2D.new()
 	p.one_shot = true
@@ -112,8 +116,8 @@ static func blood(from: Node, pos: Vector2, dir: Vector2, big: bool = false) -> 
 	_free_after(from, [p], 0.6)
 	var decals := _container(from, "Decals")
 	var s := Sprite2D.new()
-	s.texture = preload("res://assets/sprites/blood_splat.png")
-	s.global_position = pos + dir * randf_range(6.0, 18.0)
+	s.texture = preload("res://assets/sprites/fx/blood_splat.png")
+	s.global_position = ground + dir * randf_range(8.0, 24.0)
 	s.rotation = randf() * TAU
 	s.scale = Vector2.ONE * (randf_range(1.2, 2.2) if big else randf_range(0.6, 1.2))
 	s.modulate.a = 0.85

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="WeaponData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://Game/Combat/Weapons/WeaponData.gd" id="1_wd"]
-[ext_resource type="Texture2D" path="res://assets/sprites/player_unarmed.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/ui/icon_fists.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_wd")
@@ -12,8 +12,9 @@ damage = 0.0
 magazine_size = 0
 default_reserve = 0
 melee_damage = 20.0
-melee_range = 28.0
+melee_range = 34.0
 melee_stagger = 0.5
-melee_knockback = 90.0
+melee_knockback = 115.0
 melee_swing_time = 0.2
-actor_texture = ExtResource("2_tex")
+visual_key = "unarmed"
+hud_icon = ExtResource("2_icon")

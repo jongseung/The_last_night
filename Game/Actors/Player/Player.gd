@@ -4,24 +4,34 @@ extends Actor
 ## Space 회피/엄폐물 넘기 · Shift 달리기 · R 재장전 · E 상호작용 · Q 무기 전환 · Ctrl 낮은 자세
 ##
 ## 설계 원칙: 모든 동작은 0.5초 안에 끝나고, 플레이어는 언제든 다음 행동을 준비할 수 있다.
+## 세계관 규칙 "주인공은 초인이 아니다": 달리기·회피·근접은 체력(스태미나)을 쓰고, 지치면 못 한다.
 
 signal interact_target_changed(target: Interactable)
 signal hold_progress_changed(ratio: float)
 signal state_changed(state: State)
 signal kill_registered(actor: Actor)
+signal stamina_changed(current: float, maximum: float)
 
 enum State { NORMAL, DODGE, MELEE, DEAD }
 
-const WALK_SPEED := 130.0
-const SPRINT_SPEED := 215.0
-const CROUCH_SPEED := 65.0
-const AIM_SPEED := 85.0
-const DODGE_SPEED := 400.0
+const WALK_SPEED := 165.0
+const SPRINT_SPEED := 270.0
+const CROUCH_SPEED := 85.0
+const AIM_SPEED := 110.0
+const DODGE_SPEED := 480.0
 const DODGE_TIME := 0.18
 const VAULT_TIME := 0.26
 const DODGE_IFRAMES := 0.12
 const FOOTSTEP_INTERVAL := 0.28
-const SPRINT_NOISE := 130.0
+const SPRINT_NOISE := 170.0
+
+const STAMINA_MAX := 100.0
+const STAMINA_SPRINT_PER_SEC := 22.0
+const STAMINA_DODGE := 28.0
+const STAMINA_MELEE := 6.0
+const STAMINA_REGEN_PER_SEC := 30.0
+const STAMINA_REGEN_DELAY := 0.7
+const STAMINA_WINDED_UNTIL := 25.0      ## 바닥난 뒤 이만큼 회복해야 다시 달릴 수 있다
 
 @onready var interact_range: Area2D = $InteractRange
 @onready var light: PointLight2D = $Light
@@ -42,6 +52,9 @@ var _vault_clear_t: float = 0.0
 var _footstep_t: float = 0.0
 var _base_mask: int = 0
 var _input_grace: float = 0.0
+var stamina: float = STAMINA_MAX
+var winded: bool = false
+var _stamina_delay: float = 0.0
 
 
 func _ready() -> void:
@@ -58,6 +71,7 @@ func _physics_process(delta: float) -> void:
 	if is_dead:
 		return
 	_input_grace = maxf(_input_grace - delta, 0.0)
+	_update_stamina(delta)
 	if input_enabled:
 		_update_aim()
 	if not input_enabled:
@@ -81,10 +95,37 @@ func _physics_process(delta: float) -> void:
 # -- 입력 상태 ----------------------------------------------------------------
 
 func _update_aim() -> void:
-	var mouse := get_global_mouse_position()
-	var dir := mouse - global_position
+	# 마우스는 상체 높이를 가리킨다 → 바닥 좌표로 내려서 조준 방향을 구한다
+	var target := ViewSpace.ground_from_aim(get_global_mouse_position())
+	var dir := target - global_position
 	if dir.length() > 2.0:
 		face(dir)
+
+
+func _update_stamina(delta: float) -> void:
+	var before := stamina
+	if sprinting:
+		stamina = maxf(stamina - STAMINA_SPRINT_PER_SEC * delta, 0.0)
+		_stamina_delay = STAMINA_REGEN_DELAY
+		if stamina <= 0.0:
+			winded = true
+	elif _stamina_delay > 0.0:
+		_stamina_delay -= delta
+	else:
+		stamina = minf(stamina + STAMINA_REGEN_PER_SEC * delta, STAMINA_MAX)
+	if winded and stamina >= STAMINA_WINDED_UNTIL:
+		winded = false
+	if stamina != before:
+		stamina_changed.emit(stamina, STAMINA_MAX)
+
+
+func _spend_stamina(amount: float) -> bool:
+	if stamina < amount:
+		return false
+	stamina -= amount
+	_stamina_delay = STAMINA_REGEN_DELAY
+	stamina_changed.emit(stamina, STAMINA_MAX)
+	return true
 
 
 func _normal_state(delta: float) -> void:
@@ -92,7 +133,7 @@ func _normal_state(delta: float) -> void:
 	precise_aim = Input.is_action_pressed("aim") and gunplay.has_gun()
 	if Input.is_action_just_pressed("crouch"):
 		crouching = not crouching
-	sprinting = Input.is_action_pressed("sprint") and move_input != Vector2.ZERO and not precise_aim and not crouching
+	sprinting = Input.is_action_pressed("sprint") and move_input != Vector2.ZERO and not precise_aim and not crouching and not winded and stamina > 0.0
 
 	var speed := WALK_SPEED
 	if crouching:
@@ -113,8 +154,10 @@ func _normal_state(delta: float) -> void:
 		return
 
 	if Input.is_action_just_pressed("dodge"):
-		_start_dodge()
-		return
+		if _spend_stamina(STAMINA_DODGE):
+			_start_dodge()
+			return
+		GameState.show_hint("숨이 차다", 1.0)
 	if Input.is_action_just_pressed("melee"):
 		_start_melee()
 		return
@@ -169,6 +212,7 @@ func _dodge_state(delta: float) -> void:
 
 
 func _start_melee() -> void:
+	_spend_stamina(minf(STAMINA_MELEE, stamina))
 	var result := melee.perform(global_position, aim_dir, current_weapon())
 	_action_left = result.get("duration", 0.2)
 	var lunge: Vector2 = result.get("lunge", Vector2.ZERO)
@@ -191,10 +235,7 @@ func _melee_state(delta: float) -> void:
 
 
 func _play_swing(strength: float) -> void:
-	# 자리표시 애니메이션: 상체 스프라이트가 조준 방향으로 짧게 튕긴다
-	var tween := create_tween()
-	body.offset = Vector2(6.0 * strength, 0)
-	tween.tween_property(body, "offset", Vector2.ZERO, 0.18)
+	visual.play_action(0.12 + 0.12 * strength)
 
 
 func _set_state(new_state: State) -> void:

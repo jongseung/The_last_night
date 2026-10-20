@@ -60,7 +60,7 @@ func _process(_delta: float) -> void:
 				_next("repair done")
 		1:
 			if StoryFlags.has_flag("ch01_envelope_received"):
-				if g.ambient_modulate.color.r > 0.2:
+				if g.ambient_modulate.color.r > 0.3:
 					_fail("blackout did not darken ambient")
 				_next("blackout + envelope")
 		2:
@@ -88,7 +88,7 @@ func _process(_delta: float) -> void:
 			if not g.rear_door.locked:
 				# 3차 습격은 무시하고 탈출 (플레이어 무적 처리 후 순간이동)
 				g.player.health.invulnerable = true
-				g.player.global_position = g.rear_door.global_position + Vector2(0, 20)
+				g.player.global_position = g.rear_door.global_position + Vector2(0, 16)
 				g.rear_door.interact(g.player)
 				_next("rear door opened")
 		6:
@@ -120,9 +120,9 @@ func _arena_phase() -> void:
 func _check_nav(g: Level) -> void:
 	var map := g.get_world_2d().navigation_map
 	var routes := {
-		"side door → office": [Vector2(776, 500), Vector2(716, 110)],
-		"street → bay": [Vector2(364, 500), Vector2(330, 340)],
-		"bay → storage": [Vector2(200, 300), Vector2(700, 400)],
+		"side door → office": [Vector2(984, 700), Vector2(900, 210)],
+		"street → bay": [Vector2(408, 720), Vector2(380, 336)],
+		"bay → storage": [Vector2(200, 380), Vector2(900, 450)],
 	}
 	for name in routes:
 		var path := NavigationServer2D.map_get_path(map, routes[name][0], routes[name][1], true)

@@ -5,14 +5,12 @@ extends RefCounted
 signal changed
 signal current_changed(slot: WeaponSlot)
 
-const FISTS: WeaponData = preload("res://Game/Combat/Weapons/Fists.tres")
-
 var slots: Array[WeaponSlot] = []
 var current_index: int = 0
 
 
 func _init() -> void:
-	slots.append(WeaponSlot.create(FISTS, 0, 0))
+	slots.append(WeaponSlot.create(Weapons.fists(), 0, 0))
 
 
 func current() -> WeaponSlot:

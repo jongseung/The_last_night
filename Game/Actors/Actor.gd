@@ -1,19 +1,21 @@
 class_name Actor
 extends CharacterBody2D
 ## 플레이어와 적이 공유하는 액터 기반. 체력·피격·경직·넉백·무기 장착·사망 처리를 담당한다.
-## 자식 노드 규약: Body(Sprite2D) · Health · Hurtbox(Area2D) · Gunplay(Node2D) · Melee(Node)
+## 자식 노드 규약: Visual(CharacterVisual) · Health · Hurtbox(Area2D) · Gunplay(Node2D) · Melee(Node)
+## 원점 = 발 (ViewSpace 규약).
 
 signal died(actor: Actor, info: DamageInfo)
 signal damaged(actor: Actor, info: DamageInfo)
 signal weapon_changed(slot: WeaponSlot)
 
-const COVER_RADIUS := 44.0   ## 이 거리 안의 낮은 엄폐물만 몸을 가려준다
+const COVER_RADIUS := 56.0   ## 이 거리 안의 낮은 엄폐물만 몸을 가려준다
+const MUZZLE_DISTANCE := 16.0
 
 @export var team: StringName = &"enemy"
-@export var walk_speed: float = 120.0
+@export var walk_speed: float = 150.0
 
 @onready var health: Health = $Health
-@onready var body: Sprite2D = $Body
+@onready var visual: CharacterVisual = $Visual
 @onready var hurtbox: Hurtbox = $Hurtbox
 @onready var gunplay: Gunplay = $Gunplay
 @onready var melee: Melee = $Melee
@@ -29,13 +31,20 @@ var _flash_tween: Tween
 
 func _ready() -> void:
 	motion_mode = CharacterBody2D.MOTION_MODE_FLOATING
+	visual.set_variant(visual_variant())
 	gunplay.team = team
 	melee.team = team
 	hurtbox.collision_layer = Layers.hurtbox_for_team(team)
 	hurtbox.collision_mask = 0
 	health.died.connect(_on_health_died)
+	gunplay.fired.connect(func(_s: WeaponSlot) -> void: visual.play_action(0.09))
 	inventory.current_changed.connect(equip_slot)
 	equip_slot(inventory.current())
+
+
+## 그림 변형 이름 (assets/sprites/chars/*_<variant>*.png)
+func visual_variant() -> String:
+	return "player"
 
 
 func _process(delta: float) -> void:
@@ -46,8 +55,8 @@ func _process(delta: float) -> void:
 # -- 무기 -------------------------------------------------------------------
 
 func equip_slot(slot: WeaponSlot) -> void:
-	if slot and slot.data and slot.data.actor_texture:
-		body.texture = slot.data.actor_texture
+	if slot and slot.data:
+		visual.set_weapon(slot.data.visual_key)
 	gunplay.set_slot(slot)
 	weapon_changed.emit(slot)
 
@@ -56,9 +65,9 @@ func current_weapon() -> WeaponData:
 	return inventory.current().data
 
 
+## 바닥 좌표의 총구 위치. 그림은 ViewSpace.GUN_HEIGHT 만큼 올려 그린다.
 func muzzle_position() -> Vector2:
-	var offset: Vector2 = current_weapon().muzzle_offset if current_weapon() else Vector2(14, 0)
-	return global_position + offset.rotated(body.rotation)
+	return global_position + aim_dir * MUZZLE_DISTANCE
 
 
 func pick_up_weapon(slot: WeaponSlot) -> bool:
@@ -93,14 +102,16 @@ func face(dir: Vector2) -> void:
 	if dir.length_squared() < 0.0001:
 		return
 	aim_dir = dir.normalized()
-	body.rotation = aim_dir.angle()
+	visual.aim_dir = aim_dir
 
 
 ## 넉백을 합산해 이동한다. 경직 중에는 자발적 이동이 무시된다.
 func move_actor(delta: float, desired_velocity: Vector2) -> void:
 	velocity = (Vector2.ZERO if is_staggered() else desired_velocity) + knockback_velocity
 	move_and_slide()
-	knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, 700.0 * delta)
+	knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, 900.0 * delta)
+	visual.move_velocity = get_real_velocity()
+	visual.crouching = crouching
 
 
 # -- 피격 -------------------------------------------------------------------
@@ -112,7 +123,7 @@ func take_damage(info: DamageInfo) -> bool:
 		return false
 	knockback_velocity += info.direction * info.knockback
 	stagger_left = maxf(stagger_left, info.stagger)
-	Fx.blood(self, info.hit_position, info.direction, info.kind != DamageInfo.Kind.BULLET)
+	Fx.blood(self, ViewSpace.lift(global_position, 22.0), global_position, info.direction, info.kind != DamageInfo.Kind.BULLET)
 	Sfx.play("hit_flesh", -6.0, randf_range(0.9, 1.1))
 	_flash()
 	damaged.emit(self, info)
@@ -135,9 +146,9 @@ func is_covered_from(origin: Vector2) -> bool:
 func _flash() -> void:
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
-	body.modulate = Color(2.0, 1.6, 1.6)
+	visual.modulate = Color(2.0, 1.6, 1.6)
 	_flash_tween = create_tween()
-	_flash_tween.tween_property(body, "modulate", Color.WHITE, 0.12)
+	_flash_tween.tween_property(visual, "modulate", Color.WHITE, 0.12)
 
 
 func _on_health_died(info: DamageInfo) -> void:
@@ -150,9 +161,9 @@ func _on_health_died(info: DamageInfo) -> void:
 	z_index = -1
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
-	body.modulate = Color(0.55, 0.5, 0.52)
-	body.rotation += PI * 0.5 * (1.0 if randf() < 0.5 else -1.0)
-	Fx.blood(self, global_position, info.direction, true)
+	visual.modulate = Color.WHITE
+	visual.die(info.direction)
+	Fx.blood(self, ViewSpace.lift(global_position, 10.0), global_position, info.direction, true)
 	_drop_weapons()
 	died.emit(self, info)
 	_on_died(info)
@@ -174,5 +185,5 @@ func _drop_weapons() -> void:
 			continue
 		if slot.is_gun() and slot.total_ammo() <= 0:
 			continue
-		var offset := Vector2.from_angle(randf() * TAU) * randf_range(6.0, 14.0)
+		var offset := Vector2.from_angle(randf() * TAU) * randf_range(8.0, 18.0)
 		WeaponPickup.create(parent, global_position + offset, slot.data, slot.ammo, slot.reserve)

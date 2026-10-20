@@ -33,9 +33,9 @@ func _ready() -> void:
 	title_big.offset_left = -200
 	title_big.offset_right = 200
 	title_big.offset_top = -14
-	title_big.offset_bottom = 16
+	title_big.offset_bottom = 26
 	title_big.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_big.add_theme_font_size_override("font_size", 22)
+	title_big.add_theme_font_size_override("font_size", 32)
 	title_big.add_theme_color_override("font_color", Color(0.92, 0.92, 0.9))
 	title_big.modulate.a = 0.0
 	root.add_child(title_big)

@@ -20,22 +20,23 @@ enum Kind { FISTS, PISTOL, MELEE }
 @export var spread_max_deg: float = 12.0
 @export var spread_recover_per_sec: float = 14.0
 @export var precise_aim_multiplier: float = 0.35
-@export var bullet_speed: float = 1500.0
-@export var bullet_range: float = 520.0
-@export var noise_radius: float = 420.0
+@export var bullet_speed: float = 1900.0
+@export var bullet_range: float = 720.0
+@export var noise_radius: float = 560.0
 @export var camera_kick: float = 0.35
 
 @export_group("Melee")
 @export var melee_damage: float = 22.0
-@export var melee_range: float = 30.0
+@export var melee_range: float = 36.0
 @export var melee_stagger: float = 0.55
 @export var melee_knockback: float = 110.0
 @export var melee_swing_time: float = 0.24
 
 @export_group("Visuals")
-@export var actor_texture: Texture2D
+## 캐릭터 상체 시트 이름: torso_<variant>_<visual_key>.png  (unarmed · pistol · pipe)
+@export var visual_key: String = "pistol"
 @export var pickup_texture: Texture2D
-@export var muzzle_offset: Vector2 = Vector2(16, -1)
+@export var hud_icon: Texture2D
 
 
 func is_gun() -> bool:

@@ -25,7 +25,8 @@ func _ready() -> void:
 	shape.shape = circle
 	add_child(shape)
 	_sprite = Sprite2D.new()
-	_sprite.texture = slot.data.pickup_texture if slot and slot.data.pickup_texture else preload("res://assets/sprites/pickup_pistol.png")
+	_sprite.position = Vector2(0, -4)
+	_sprite.texture = slot.data.pickup_texture if slot and slot.data.pickup_texture else preload("res://assets/sprites/props/pickup_pistol.png")
 	add_child(_sprite)
 	z_index = -1
 	add_to_group("pickups")

@@ -5,10 +5,10 @@ extends Camera2D
 
 @export var target_path: NodePath
 @export var follow_speed: float = 9.0
-@export var aim_offset_max: float = 70.0
-@export var aim_offset_max_precise: float = 130.0
+@export var aim_offset_max: float = 100.0
+@export var aim_offset_max_precise: float = 180.0
 @export var aim_offset_ratio: float = 0.45
-@export var max_shake: float = 6.0
+@export var max_shake: float = 8.0
 @export var bounds: Rect2 = Rect2()
 
 var target: Node2D

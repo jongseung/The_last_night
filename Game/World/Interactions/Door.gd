@@ -14,7 +14,7 @@ func _ready() -> void:
 	one_shot = true
 	var shape := CollisionShape2D.new()
 	var box := RectangleShape2D.new()
-	box.size = Vector2(40, 30)
+	box.size = Vector2(48, 40)
 	shape.shape = box
 	add_child(shape)
 

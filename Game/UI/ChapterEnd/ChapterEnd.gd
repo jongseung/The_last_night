@@ -14,42 +14,43 @@ func _ready() -> void:
 	var small := Label.new()
 	small.text = "CHAPTER %s 완료" % chapter_id.trim_prefix("CH")
 	small.add_theme_color_override("font_color", Color(0.6, 0.62, 0.64))
-	small.position = Vector2(80, 80)
+	small.position = Vector2(120, 110)
 	add_child(small)
 	var big := Label.new()
 	big.text = GameState.chapter_title(chapter_id)
-	big.add_theme_font_size_override("font_size", 22)
-	big.position = Vector2(80, 98)
+	big.add_theme_font_size_override("font_size", 32)
+	big.position = Vector2(120, 132)
 	add_child(big)
 	var lines := []
 	lines.append("소요 시간  %s" % _fmt_time(stats.get("seconds", 0.0)))
 	lines.append("처치  %d" % stats.get("kills", 0))
 	lines.append("발사한 총성  %d  — 남천동 전체가 들었다" % stats.get("gunshots", 0))
 	lines.append("피해  %d" % stats.get("damage_taken", 0))
-	var y := 140
+	var y := 196
 	for l in lines:
 		var lab := Label.new()
 		lab.text = l
-		lab.position = Vector2(80, y)
+		lab.add_theme_font_size_override("font_size", 13)
+		lab.position = Vector2(120, y)
 		add_child(lab)
-		y += 16
+		y += 22
 	var next_id: String = GameState.CHAPTERS.get(chapter_id, {}).get("next", "")
 	var nxt := Label.new()
 	nxt.text = "다음 — CHAPTER %s %s (제작 예정)" % [next_id.trim_prefix("CH"), GameState.chapter_title(next_id)] if next_id != "" else ""
 	nxt.add_theme_color_override("font_color", Color(1.0, 0.77, 0.43))
-	nxt.position = Vector2(80, y + 16)
+	nxt.position = Vector2(120, y + 18)
 	add_child(nxt)
 	var flags := Label.new()
 	flags.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	flags.text = "스토리 플래그: " + ", ".join(StoryFlags.to_dict().keys())
 	flags.add_theme_color_override("font_color", Color(0.4, 0.42, 0.44))
-	flags.position = Vector2(80, y + 36)
-	flags.custom_minimum_size = Vector2(480, 0)
-	flags.size = Vector2(480, 30)
+	flags.position = Vector2(120, y + 44)
+	flags.custom_minimum_size = Vector2(720, 0)
+	flags.size = Vector2(720, 30)
 	add_child(flags)
 	var b := Button.new()
 	b.text = "메인 메뉴로"
-	b.position = Vector2(80, y + 80)
+	b.position = Vector2(120, y + 100)
 	b.pressed.connect(func() -> void: GameState.go_to_main_menu())
 	add_child(b)
 	b.grab_focus()

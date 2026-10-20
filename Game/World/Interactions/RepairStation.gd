@@ -13,7 +13,7 @@ func _ready() -> void:
 	super._ready()
 	var shape := CollisionShape2D.new()
 	var box := RectangleShape2D.new()
-	box.size = Vector2(60, 40)
+	box.size = Vector2(80, 56)
 	shape.shape = box
 	add_child(shape)
 	hold_progress.connect(func(r: float) -> void:

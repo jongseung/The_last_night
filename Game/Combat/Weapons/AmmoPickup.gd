@@ -25,7 +25,7 @@ func _ready() -> void:
 	shape.shape = circle
 	add_child(shape)
 	var s := Sprite2D.new()
-	s.texture = preload("res://assets/sprites/magazine.png")
+	s.texture = preload("res://assets/sprites/props/magazine.png")
 	add_child(s)
 	z_index = -1
 	add_to_group("pickups")

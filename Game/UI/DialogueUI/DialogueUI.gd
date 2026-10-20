@@ -48,10 +48,10 @@ func _ready() -> void:
 	panel.add_theme_stylebox_override("panel", style)
 	panel.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	panel.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	panel.offset_left = 60
-	panel.offset_right = -60
-	panel.offset_top = -64
-	panel.offset_bottom = -14
+	panel.offset_left = 120
+	panel.offset_right = -120
+	panel.offset_top = -92
+	panel.offset_bottom = -34
 	panel.visible = false
 	root.add_child(panel)
 	var vbox := VBoxContainer.new()
@@ -61,16 +61,17 @@ func _ready() -> void:
 	vbox.add_child(name_label)
 	text_label = Label.new()
 	text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_label.custom_minimum_size = Vector2(0, 26)
+	text_label.custom_minimum_size = Vector2(0, 30)
+	text_label.add_theme_font_size_override("font_size", 13)
 	vbox.add_child(text_label)
 	cue_label = Label.new()
 	cue_label.text = "▼"
 	cue_label.add_theme_color_override("font_color", Color(0.6, 0.62, 0.64))
 	cue_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
-	cue_label.offset_left = -84
-	cue_label.offset_right = -64
-	cue_label.offset_top = -34
-	cue_label.offset_bottom = -18
+	cue_label.offset_left = -144
+	cue_label.offset_right = -124
+	cue_label.offset_top = -56
+	cue_label.offset_bottom = -40
 	cue_label.visible = false
 	root.add_child(cue_label)
 
@@ -139,5 +140,5 @@ func _close() -> void:
 
 func _set_letterbox(on: bool) -> void:
 	var t := create_tween().set_parallel(true)
-	t.tween_property(bar_top, "offset_bottom", 22.0 if on else 0.0, 0.3)
-	t.tween_property(bar_bottom, "offset_top", -22.0 if on else 0.0, 0.3)
+	t.tween_property(bar_top, "offset_bottom", 30.0 if on else 0.0, 0.3)
+	t.tween_property(bar_bottom, "offset_top", -30.0 if on else 0.0, 0.3)

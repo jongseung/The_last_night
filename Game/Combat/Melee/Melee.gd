@@ -14,7 +14,7 @@ signal whiffed
 const COMBO_WINDOW := 0.8
 const ARC_DEG := 110.0
 const TAKEDOWN_TIME := 0.45
-const LUNGE_DISTANCE := 14.0
+const LUNGE_DISTANCE := 18.0
 
 @export var team: StringName = &"player"
 
@@ -37,7 +37,7 @@ func _process(delta: float) -> void:
 ## 공격을 실행하고 액터가 재생해야 할 동작 정보를 돌려준다.
 ## 반환: {"kind": "takedown"|"strike"|"whiff", "duration": float, "lunge": Vector2, "target": Node}
 func perform(origin: Vector2, aim_dir: Vector2, weapon: WeaponData) -> Dictionary:
-	var range_px := weapon.melee_range if weapon else 28.0
+	var range_px := weapon.melee_range if weapon else 34.0
 	var target := find_target(origin, aim_dir, range_px + LUNGE_DISTANCE)
 	if target == null:
 		combo_count = 0
